@@ -13,7 +13,7 @@ def emitir_bip():
 if 'historico_dia' not in st.session_state:
     st.session_state['historico_dia'] = []
 
-# 2. BANCO DE DADOS (Nomes sem acento internamente para evitar erro)
+# 2. BANCO DE DADOS (Nomes limpos para evitar erro de leitura no Excel)
 banco = {
     'Salmao':   {'ref': 8.50,  'liberado': 85, 'pendente': 15},
     'Camarao':  {'ref': 13.00, 'liberado': 60, 'pendente': 40},
@@ -28,12 +28,12 @@ aba_config, aba_dashboard, aba_consolidado, aba_relatorio = st.tabs([
 with aba_config:
     st.subheader("Entrada de Dados")
     peixe_sel = st.selectbox("Selecione o Pescado:", list(banco.keys()))
-    preco_atual = st.number_input(f"Preço Atual {peixe_sel} (USD/KG):", value=banco[peixe_sel]['ref'])
+    preco_atual = st.number_input(f"Preco Atual {peixe_sel} (USD/KG):", value=banco[peixe_sel]['ref'])
     
     dados = banco[peixe_sel]
     x_calc = ((preco_atual - dados['ref']) / dados['ref']) * 100
     
-    # Definição do Veredito
+    # Lógica de Veredito
     if preco_atual == 1.0: veredito_txt = "VACUO"
     elif x_calc >= 10: veredito_txt = "PULA"
     else: veredito_txt = "ENTRA"
@@ -42,7 +42,7 @@ with aba_config:
         st.session_state['historico_dia'].insert(0, {
             "Horario": datetime.now().strftime("%H:%M:%S"),
             "Produto": peixe_sel,
-            "Preco": f"USD {preco_atual:.2f}",
+            "Preco_USD": f"{preco_atual:.2f}",
             "Variacao_X": f"{x_calc:.2f}%",
             "Veredito": veredito_txt
         })
@@ -67,10 +67,10 @@ with aba_relatorio:
     st.subheader("📂 Relatorios de Auditoria")
     if st.session_state['historico_dia']:
         df_relatorio = pd.DataFrame(st.session_state['historico_dia'])
-        st.table(df_relatorio) # Tabela simples e limpa
+        st.table(df_relatorio)
         
-        # O segredo para o Excel não bugar os acentos: encoding 'utf-8-sig'
-        csv = df_relatorio.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
+        # O PULO DO GATO: sep=';' e encoding 'utf-8-sig'
+        csv = df_relatorio.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
         
         st.download_button(
             label="📥 Baixar Relatorio Excel",
