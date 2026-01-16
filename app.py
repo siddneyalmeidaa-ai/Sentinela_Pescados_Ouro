@@ -13,7 +13,7 @@ def emitir_bip():
 if 'historico_dia' not in st.session_state:
     st.session_state['historico_dia'] = []
 
-# 2. BANCO DE DADOS (Nomes limpos para evitar erro de leitura no Excel)
+# 2. BANCO DE DADOS (Nomes internos sem acento para o Excel ler perfeito)
 banco = {
     'Salmao':   {'ref': 8.50,  'liberado': 85, 'pendente': 15},
     'Camarao':  {'ref': 13.00, 'liberado': 60, 'pendente': 40},
@@ -33,7 +33,6 @@ with aba_config:
     dados = banco[peixe_sel]
     x_calc = ((preco_atual - dados['ref']) / dados['ref']) * 100
     
-    # Lógica de Veredito
     if preco_atual == 1.0: veredito_txt = "VACUO"
     elif x_calc >= 10: veredito_txt = "PULA"
     else: veredito_txt = "ENTRA"
@@ -42,7 +41,7 @@ with aba_config:
         st.session_state['historico_dia'].insert(0, {
             "Horario": datetime.now().strftime("%H:%M:%S"),
             "Produto": peixe_sel,
-            "Preco_USD": f"{preco_atual:.2f}",
+            "Preco": f"USD {preco_atual:.2f}",
             "Variacao_X": f"{x_calc:.2f}%",
             "Veredito": veredito_txt
         })
@@ -60,6 +59,20 @@ with aba_dashboard:
 
 with aba_consolidado:
     st.subheader("📊 O Casado (Panorama Geral)")
+    
+    # --- O GRÁFICO QUE TINHA SUMIDO (RESTAURADO) ---
+    df_graph = pd.DataFrame([
+        {"Pescado": k, "Status": "Liberado", "Valor": v['liberado']} for k, v in banco.items()
+    ] + [
+        {"Pescado": k, "Status": "Pendente", "Valor": v['pendente']} for k, v in banco.items()
+    ])
+    
+    fig_cons = px.bar(df_graph, x="Pescado", y="Valor", color="Status",
+                      barmode="stack",
+                      color_discrete_map={"Liberado": "#2ecc71", "Pendente": "#e74c3c"})
+    st.plotly_chart(fig_cons, use_container_width=True)
+    
+    # Tabela consolidada abaixo do gráfico
     df_visual = pd.DataFrame([{"Pescado": k, "Ref. Mercado": f"USD {v['ref']:.2f}", "Liberado": f"{v['liberado']}%", "Pendente": f"{v['pendente']}%"} for k, v in banco.items()])
     st.table(df_visual)
 
@@ -69,15 +82,9 @@ with aba_relatorio:
         df_relatorio = pd.DataFrame(st.session_state['historico_dia'])
         st.table(df_relatorio)
         
-        # O PULO DO GATO: sep=';' e encoding 'utf-8-sig'
+        # Download sem erros de acento (Padrão Excel)
         csv = df_relatorio.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
-        
-        st.download_button(
-            label="📥 Baixar Relatorio Excel",
-            data=csv,
-            file_name=f"auditoria_{datetime.now().strftime('%d_%m_%Y')}.csv",
-            mime="text/csv"
-        )
+        st.download_button(label="📥 Baixar Relatorio Excel", data=csv, file_name=f"auditoria_{datetime.now().strftime('%d_%m_%Y')}.csv", mime="text/csv")
     else:
         st.info("Nenhum registro para exibir.")
-        
+    
