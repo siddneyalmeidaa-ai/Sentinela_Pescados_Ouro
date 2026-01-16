@@ -3,14 +3,14 @@ import pandas as pd
 from datetime import datetime
 import plotly.express as px
 
-# 1. SETUP "SPA IA SENTINELA" - S.P.A. (MANUTENÇÃO DE REGRAS ANTERIORES)
+# 1. SETUP "SPA IA SENTINELA" - S.P.A.
 st.set_page_config(
     page_title="SPA IA SENTINELA", 
     layout="wide", 
     initial_sidebar_state="collapsed"
 )
 
-# CSS PARA OCULTAR O QUE FOI PEDIDO (BARRA SUPERIOR, LÁPIS, MÃO E MENU)
+# CSS BLINDADO: Oculta Header, Sidebar, Menu, Lápis/Mão e Barra Inferior (Footer)
 st.markdown("""
     <style>
         [data-testid="stHeader"] {visibility: hidden; height: 0px;}
@@ -18,7 +18,11 @@ st.markdown("""
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
         .stActionButton {display: none;} 
-        .block-container {padding-top: 0rem;}
+        [data-testid="stStatusWidget"] {visibility: hidden;}
+        .block-container {padding-top: 0rem; padding-bottom: 0rem;}
+        /* Remove o espaço da barra inferior do Streamlit Cloud */
+        footer {display:none !important;}
+        header {display:none !important;}
     </style>
 """, unsafe_allow_html=True)
 
@@ -29,25 +33,24 @@ def emitir_bip():
 if 'historico_dia' not in st.session_state:
     st.session_state['historico_dia'] = []
 
-# 2. BANCO DE DADOS (MANTIDO CONFORME PADRÃO)
+# 2. BANCO DE DADOS
 banco = {
     'Salmao':   {'ref': 8.50,  'lib': 85, 'pen': 15},
     'Camarao':  {'ref': 13.00, 'lib': 60, 'pen': 40},
     'Tilapia':  {'ref': 5.40,  'lib': 95, 'pen': 5}
 }
 
-# 3. INTERFACE EM ABAS (ESTRUTURA MANTIDA)
+# 3. INTERFACE SPA (NAVEGAÇÃO POR ABAS)
 aba_ajuste, aba_dash, aba_casado, aba_hist = st.tabs([
     "⚙️ Ajuste", "📈 Dash", "📊 Casado", "📂 Hist"
 ])
 
 with aba_ajuste:
-    st.write(f"### SPA IA SENTINELA | Operador: **S.P.A.**")
+    st.write("### SPA IA SENTINELA")
     peixe_sel = st.selectbox("Selecione o Item:", list(banco.keys()))
     preco_atual = st.number_input(f"Preço Atual (USD):", value=banco[peixe_sel]['ref'], step=0.10)
     
     dados = banco[peixe_sel]
-    # CÁLCULO DO X (MANTIDA REGRA DE -50% DA PROJEÇÃO)
     x_calc = ((preco_atual - dados['ref']) / dados['ref']) * 100
     
     if preco_atual == 1.0: veredito = "VACUO"; cor = "🔴"
@@ -61,7 +64,7 @@ with aba_ajuste:
             "X%": f"{x_calc:.2f}%",
             "Veredito": veredito
         })
-        st.toast(f"Registrado por S.P.A.: {veredito}")
+        st.toast(f"Registrado: {veredito}")
 
 with aba_dash:
     st.caption(f"🛡️ Dash Individual: {peixe_sel}")
@@ -79,7 +82,7 @@ with aba_dash:
     st.plotly_chart(fig_ind, use_container_width=True)
 
 with aba_casado:
-    st.caption("📊 Visão Consolidada S.P.A.")
+    st.caption("📊 Visão Consolidada")
     df_v = pd.DataFrame([{"P": k, "Ref": f"${v['ref']:.2f}", "Lib": f"{v['lib']}%", "Pen": f"{v['pen']}%"} for k, v in banco.items()])
     st.table(df_v)
     
@@ -90,11 +93,10 @@ with aba_casado:
     st.plotly_chart(fig_c, use_container_width=True)
 
 with aba_hist:
-    st.caption("📂 Histórico de Movimentação")
+    st.caption("📂 Histórico")
     if st.session_state['historico_dia']:
         df_r = pd.DataFrame(st.session_state['historico_dia'])
         st.table(df_r)
-        # DOWNLOAD SEM ERRO DE ACENTO
         csv = df_r.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
         st.download_button("📥 Baixar CSV S.P.A.", csv, "auditoria_spa.csv", "text/csv")
-        
+    
