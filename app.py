@@ -15,14 +15,14 @@ if 'historico_dia' not in st.session_state:
 
 # 2. BANCO DE DADOS PADRÃO OURO
 banco = {
-    'Salmão':   {'ref': 8.50,  'liberado': 85, 'pendente': 15},
-    'Camarão':  {'ref': 13.00, 'liberado': 60, 'pendente': 40},
-    'Tilápia':  {'ref': 5.40,  'liberado': 95, 'pendente': 5}
+    'Salmao':   {'ref': 8.50,  'liberado': 85, 'pendente': 15},
+    'Camarao':  {'ref': 13.00, 'liberado': 60, 'pendente': 40},
+    'Tilapia':  {'ref': 5.40,  'liberado': 95, 'pendente': 5}
 }
 
-# 3. INTERFACE EM ABAS (ESTRUTURA COMPLETA)
+# 3. INTERFACE EM ABAS
 aba_config, aba_dashboard, aba_consolidado, aba_relatorio = st.tabs([
-    "⚙️ Configuração", "📈 Dashboard Individual", "📊 Visão Consolidada", "📂 Relatórios do Dia"
+    "⚙️ Configuração", "📈 Dashboard", "📊 Visão Consolidada", "📂 Relatórios"
 ])
 
 with aba_config:
@@ -30,58 +30,54 @@ with aba_config:
     peixe_sel = st.selectbox("Selecione o Pescado:", list(banco.keys()))
     preco_atual = st.number_input(f"Preço Atual {peixe_sel} (USD/KG):", value=banco[peixe_sel]['ref'])
     
-    # Cálculos em tempo real para os gráficos não sumirem
     dados = banco[peixe_sel]
     x_calc = ((preco_atual - dados['ref']) / dados['ref']) * 100
     
-    if preco_atual == 1.0: veredito = "VÁCUO"; cor = "🔴"
-    elif x_calc >= 10: veredito = "PULA"; cor = "🟡"
-    else: veredito = "ENTRA"; cor = "🟢"
+    if preco_atual == 1.0: veredito_txt = "VACUO"; cor_icon = "🔴"
+    elif x_calc >= 10: veredito_txt = "PULA"; cor_icon = "🟡"
+    else: veredito_txt = "ENTRA"; cor_icon = "🟢"
 
-    if st.button("🔔 Registrar Aumento no Relatório"):
+    if st.button("🔔 Registrar Aumento"):
         st.session_state['historico_dia'].insert(0, {
             "Horário": datetime.now().strftime("%H:%M:%S"),
             "Produto": peixe_sel,
             "Preço": f"USD {preco_atual:.2f}",
-            "X": f"{x_calc:.2f}%",
-            "Veredito": f"{cor} {veredito}"
+            "Variação X": f"{x_calc:.2f}%",
+            "Veredito": veredito_txt,
+            "Alerta": cor_icon
         })
-        st.success("Histórico atualizado com sucesso!")
+        st.success("Registrado com sucesso!")
 
 with aba_dashboard:
     st.title(f"🛡️ Sentinela: {peixe_sel}")
     if preco_atual == 1.0 or x_calc >= 10: emitir_bip()
-    
-    c1, c2 = st.columns(2)
-    c1.metric("LIBERADO", f"{dados['liberado']}%")
-    c2.metric("PENDENTE", f"{dados['pendente']}%")
-    
-    st.info(f"Veredito Atual: {cor} {veredito} (Variação: {x_calc:.2f}%)")
-    
-    fig_ind = px.pie(values=[dados['liberado'], dados['pendente']], 
-                     names=['LIBERADO', 'PENDENTE'], hole=0.5,
-                     color_discrete_sequence=['#2ecc71', '#e74c3c'])
+    st.metric("LIBERADO", f"{dados['liberado']}%")
+    st.metric("PENDENTE", f"{dados['pendente']}%")
+    st.info(f"Veredito: {cor_icon} {veredito_txt}")
+    fig_ind = px.pie(values=[dados['liberado'], dados['pendente']], names=['LIBERADO', 'PENDENTE'], hole=0.5, color_discrete_sequence=['#2ecc71', '#e74c3c'])
     st.plotly_chart(fig_ind, use_container_width=True)
 
 with aba_consolidado:
     st.subheader("📊 O Casado (Panorama Geral)")
-    # Tabela formatada com Moeda e %
-    df_visual = pd.DataFrame([{
-        "Pescado": k, "Ref. Mercado": f"USD {v['ref']:.2f}", 
-        "Liberado": f"{v['liberado']}%", "Pendente": f"{v['pendente']}%"
-    } for k, v in banco.items()])
+    df_visual = pd.DataFrame([{"Pescado": k, "Ref. Mercado": f"USD {v['ref']:.2f}", "Liberado": f"{v['liberado']}%", "Pendente": f"{v['pendente']}%"} for k, v in banco.items()])
     st.table(df_visual)
-    
-    # Gráfico de Barras fixo
-    df_cons = pd.DataFrame([{"Pescado": k, "Liberado": v['liberado'], "Pendente": v['pendente']} for k, v in banco.items()])
-    fig_cons = px.bar(df_cons, x="Pescado", y=["Liberado", "Pendente"], barmode="stack",
-                      color_discrete_map={"Liberado": "#2ecc71", "Pendente": "#e74c3c"})
-    st.plotly_chart(fig_cons, use_container_width=True)
 
 with aba_relatorio:
-    st.subheader("📂 Base de Relatórios (Histórico do Dia)")
+    st.subheader("📂 Relatórios de Auditoria")
     if st.session_state['historico_dia']:
-        st.dataframe(pd.DataFrame(st.session_state['historico_dia']), use_container_width=True)
+        df_tela = pd.DataFrame(st.session_state['historico_dia'])
+        st.dataframe(df_tela, use_container_width=True)
+        
+        # Correção ABNT/Excel: Remove ícones e usa codificação especial
+        df_download = df_tela.copy().drop(columns=['Alerta'])
+        csv = df_download.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
+        
+        st.download_button(
+            label="📥 Baixar Relatório (Padrão Excel)",
+            data=csv,
+            file_name=f"auditoria_{datetime.now().strftime('%d_%m_%Y')}.csv",
+            mime="text/csv"
+        )
     else:
-        st.warning("Nenhum aumento registrado manualmente ainda.")
+        st.info("Nenhum registro para exibir.")
         
