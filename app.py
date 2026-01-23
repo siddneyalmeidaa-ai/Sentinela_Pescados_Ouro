@@ -4,7 +4,7 @@ from datetime import datetime
 import plotly.express as px
 import streamlit.components.v1 as components
 
-# 1. COMANDO CENTRAL
+# 1. CONFIGURAÇÃO DE COMANDO CENTRAL
 st.set_page_config(page_title="SPA IA SENTINELA", layout="wide")
 
 # 2. MOTOR MATRIX (CÓDIGO BLINDADO)
@@ -35,12 +35,4 @@ matrix_vFinal = """
         }
     }
     setInterval(draw, 33);
-</script>
-"""
-components.html(matrix_vFinal, height=0)
-
-# 3. ESTILIZAÇÃO E ORTOGRAFIA CSS
-st.markdown("""
-    <style>
-        [data-testid="stAppViewContainer"] { background: transparent !
-        
+</
