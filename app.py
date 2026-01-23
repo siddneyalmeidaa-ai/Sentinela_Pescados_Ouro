@@ -26,13 +26,5 @@ matrix_vFinal = """
         ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
         ctx.fillRect(0, 0, c.width, c.height);
         ctx.fillStyle = "#0F0";
-        ctx.font = fsize + "px monospace";
-        for(var i = 0; i < ds.length; i++) {
-            var t = txt[Math.floor(Math.random()*txt.length)];
-            ctx.fillText(t, i*fsize, ds[i]*fsize);
-            if(ds[i]*fsize > c.height && Math.random() > 0.975) ds[i] = 0;
-            ds[i]++;
-        }
-    }
-    setInterval(draw, 33);
-    
+        ctx
+        
