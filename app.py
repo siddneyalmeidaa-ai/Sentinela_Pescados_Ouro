@@ -4,7 +4,7 @@ from datetime import datetime
 import plotly.express as px
 import streamlit.components.v1 as components
 
-# 1. CONFIGURAÇÃO DE COMANDO CENTRAL
+# 1. SETUP DE COMANDO
 st.set_page_config(page_title="SPA IA SENTINELA", layout="wide")
 
 # 2. MOTOR MATRIX (CÓDIGO BLINDADO)
@@ -39,7 +39,7 @@ matrix_vFinal = """
 """
 components.html(matrix_vFinal, height=0)
 
-# 3. ESTILIZAÇÃO CSS SENTINELA
+# 3. ESTILIZAÇÃO CSS (INTERFACE LIMPA)
 st.markdown("""
     <style>
         [data-testid="stAppViewContainer"] { background: transparent !important; }
@@ -56,13 +56,13 @@ st.markdown("""
             border: 2px solid #00FF41 !important;
             font-weight: bold !important;
         }
-        [data-testid="stMetricValue"] { color: #00FF41 !important; text-align: center; font-size: 40px !important; }
-        [data-testid="stMetricLabel"] { color: #00FF41 !important; text-align: center; font-size: 18px !important; }
+        [data-testid="stMetricValue"] { color: #00FF41 !important; text-align: center; font-size: 42px !important; }
+        [data-testid="stMetricLabel"] { color: #00FF41 !important; text-align: center; }
         h3 { color: #00FF41 !important; text-align: center; text-shadow: 0 0 10px #00FF41; }
     </style>
 """, unsafe_allow_html=True)
 
-# 4. BANCO DE DADOS OPERACIONAL
+# 4. BANCO DE DADOS E MEMÓRIA
 if 'logs_sentinela' not in st.session_state:
     st.session_state['logs_sentinela'] = []
 
@@ -72,10 +72,16 @@ banco = {
     'Tilápia':  {'ref': 5.40,  'lib': 95, 'pen': 5}
 }
 
-# 5. INTERFACE DE ABAS
-t_rel, t_hist, t_casado, t_analise = st.tabs(["📑 RELATÓRIO", "📜 HISTÓRICO", "📊 CASADO", "📉 ANÁLISE"])
+# 5. ESTRUTURA DE ABAS DESMEMBRADAS
+t_term, t_rel, t_casado, t_analise = st.tabs([
+    "🎮 TERMINAL", 
+    "📑 RELATÓRIO", 
+    "📊 CASADO", 
+    "📉 ANÁLISE"
+])
 
-with t_rel:
+# --- ABA 1: TERMINAL (APENAS ENTRADA) ---
+with t_term:
     st.write("### > TERMINAL DE OPERAÇÃO")
     item = st.selectbox("IDENTIFIQUE O ITEM:", list(banco.keys()))
     val_in = st.number_input("VALOR ATUAL ($ USD):", value=banco[item]['ref'], format="%.2f")
@@ -91,37 +97,51 @@ with t_rel:
             "VARIAÇÃO %": f"{variacao:.2f}%",
             "STATUS": status
         })
-        st.success(f"DADO BLINDADO: {status}")
+        st.success(f"REGISTRO {item} BLINDADO COM SUCESSO!")
 
-    # EXPORTAÇÃO CORRIGIDA PARA MOBILE
+# --- ABA 2: RELATÓRIO (APENAS EXPORTAÇÃO E LOGS) ---
+with t_rel:
+    st.write("### > CENTRO DE RELATÓRIOS")
     if st.session_state['logs_sentinela']:
         df_export = pd.DataFrame(st.session_state['logs_sentinela'])
+        
+        # Codificação especial para Excel de Celular (utf-8-sig)
         csv = df_export.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
+        
         st.download_button(
-            label="📥 GERAR RELATÓRIO FINAL",
+            label="📥 BAIXAR RELATÓRIO PARA EXCEL (MOBILE)",
             data=csv,
-            file_name=f'Relatorio_Sentinela_{datetime.now().strftime("%H%M")}.csv',
+            file_name=f'Auditoria_{datetime.now().strftime("%d_%m_%H%M")}.csv',
             mime='text/csv'
         )
+        st.divider()
+        st.write("#### ÚLTIMOS REGISTROS:")
+        st.table(df_export)
+    else:
+        st.info("AGUARDANDO DADOS PARA GERAR RELATÓRIO.")
 
-with t_hist:
-    st.write("### > HISTÓRICO DE AUDITORIA")
-    if st.session_state['logs_sentinela']:
-        st.table(pd.DataFrame(st.session_state['logs_sentinela']))
-
+# --- ABA 3: CASADO ---
 with t_casado:
     st.write("### > VISÃO CONSOLIDADA")
-    df_c = pd.DataFrame([{"ITEM": k, "REFERÊNCIA": f"$ {v['ref']:.2f}", "LIBERADO": f"{v['lib']}%", "PENDENTE": f"{v['pen']}%"} for k, v in banco.items()])
+    df_c = pd.DataFrame([
+        {"ITEM": k, "REFERÊNCIA": f"$ {v['ref']:.2f}", "LIBERADO": f"{v['lib']}%", "PENDENTE": f"{v['pen']}%"} 
+        for k, v in banco.items()
+    ])
     st.table(df_c)
 
+# --- ABA 4: ANÁLISE ---
 with t_analise:
     st.write(f"### > ANÁLISE DE CAMPO: {item}")
-    col1, col2 = st.columns(2)
-    with col1: st.metric("LIBERADO", f"{banco[item]['lib']}%")
-    with col2: st.metric("PENDENTE", f"{banco[item]['pen']}%")
+    c1, c2 = st.columns(2)
+    with c1: st.metric("LIBERADO", f"{banco[item]['lib']}%")
+    with c2: st.metric("PENDENTE", f"{banco[item]['pen']}%")
     
-    fig_p = px.pie(values=[banco[item]['lib'], banco[item]['pen']], names=['LIBERADO', 'PENDENTE'], hole=0.7,
-                   color_discrete_sequence=['#00FF41', '#FF0000'])
+    fig_p = px.pie(
+        values=[banco[item]['lib'], banco[item]['pen']], 
+        names=['LIBERADO', 'PENDENTE'], 
+        hole=0.7,
+        color_discrete_sequence=['#00FF41', '#FF0000']
+    )
     fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', font_color="#00FF41", showlegend=False, height=350)
     st.plotly_chart(fig_p, use_container_width=True)
     
