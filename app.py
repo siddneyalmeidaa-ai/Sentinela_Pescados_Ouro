@@ -67,5 +67,61 @@ if 'logs_sentinela' not in st.session_state:
     st.session_state['logs_sentinela'] = []
 
 banco = {
-    'Salmão':   {'ref': 8.50,  'lib': 85,
-                 
+    'Salmão':   {'ref': 8.50,  'lib': 85, 'pen': 15},
+    'Camarão':  {'ref': 13.00, 'lib': 60, 'pen': 40},
+    'Tilápia':  {'ref': 5.40,  'lib': 95, 'pen': 5}
+}
+
+# 5. INTERFACE DE ABAS
+t_rel, t_hist, t_casado, t_analise = st.tabs(["📑 RELATÓRIO", "📜 HISTÓRICO", "📊 CASADO", "📉 ANÁLISE"])
+
+with t_rel:
+    st.write("### > TERMINAL DE OPERAÇÃO")
+    item = st.selectbox("IDENTIFIQUE O ITEM:", list(banco.keys()))
+    val_in = st.number_input("VALOR ATUAL ($ USD):", value=banco[item]['ref'], format="%.2f")
+    
+    variacao = ((val_in - banco[item]['ref']) / banco[item]['ref']) * 100
+    status = "ENTRA" if variacao < 10 else "PULA"
+    
+    if st.button("🚀 EXECUTAR REGISTRO"):
+        st.session_state['logs_sentinela'].insert(0, {
+            "HORA DO REGISTRO": datetime.now().strftime("%H:%M:%S"),
+            "ITEM": item,
+            "VALOR": f"$ {val_in:.2f}",
+            "VARIAÇÃO %": f"{variacao:.2f}%",
+            "STATUS": status
+        })
+        st.success(f"DADO BLINDADO: {status}")
+
+    # EXPORTAÇÃO CORRIGIDA PARA MOBILE
+    if st.session_state['logs_sentinela']:
+        df_export = pd.DataFrame(st.session_state['logs_sentinela'])
+        csv = df_export.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
+        st.download_button(
+            label="📥 GERAR RELATÓRIO FINAL",
+            data=csv,
+            file_name=f'Relatorio_Sentinela_{datetime.now().strftime("%H%M")}.csv',
+            mime='text/csv'
+        )
+
+with t_hist:
+    st.write("### > HISTÓRICO DE AUDITORIA")
+    if st.session_state['logs_sentinela']:
+        st.table(pd.DataFrame(st.session_state['logs_sentinela']))
+
+with t_casado:
+    st.write("### > VISÃO CONSOLIDADA")
+    df_c = pd.DataFrame([{"ITEM": k, "REFERÊNCIA": f"$ {v['ref']:.2f}", "LIBERADO": f"{v['lib']}%", "PENDENTE": f"{v['pen']}%"} for k, v in banco.items()])
+    st.table(df_c)
+
+with t_analise:
+    st.write(f"### > ANÁLISE DE CAMPO: {item}")
+    col1, col2 = st.columns(2)
+    with col1: st.metric("LIBERADO", f"{banco[item]['lib']}%")
+    with col2: st.metric("PENDENTE", f"{banco[item]['pen']}%")
+    
+    fig_p = px.pie(values=[banco[item]['lib'], banco[item]['pen']], names=['LIBERADO', 'PENDENTE'], hole=0.7,
+                   color_discrete_sequence=['#00FF41', '#FF0000'])
+    fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', font_color="#00FF41", showlegend=False, height=350)
+    st.plotly_chart(fig_p, use_container_width=True)
+    
