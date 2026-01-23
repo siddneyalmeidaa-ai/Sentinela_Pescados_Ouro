@@ -4,11 +4,11 @@ from datetime import datetime
 import plotly.express as px
 import streamlit.components.v1 as components
 
-# 1. SETUP DE COMANDO
+# 1. CONFIGURAÇÃO DE SOBERANIA
 st.set_page_config(page_title="SPA IA SENTINELA", layout="wide")
 
-# 2. MOTOR MATRIX (CORTINA DE FUNDO TOTAL)
-matrix_v7 = """
+# 2. MOTOR MATRIX (CORTINA DE CÓDIGOS)
+matrix_v8 = """
 <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: black;">
     <canvas id="m"></canvas>
 </div>
@@ -37,9 +37,9 @@ matrix_v7 = """
     setInterval(draw, 33);
 </script>
 """
-components.html(matrix_v7, height=0)
+components.html(matrix_v8, height=0)
 
-# 3. CSS SENTINELA (CORREÇÃO DE DESIGN E MÉTRICAS)
+# 3. DESIGN SENTINELA (AJUSTES VISUAIS)
 st.markdown("""
     <style>
         [data-testid="stAppViewContainer"] { background: transparent !important; }
@@ -55,19 +55,43 @@ st.markdown("""
             color: #00FF41 !important;
             border: 2px solid #00FF41 !important;
             font-weight: bold !important;
-            margin-top: 15px;
+            margin-top: 20px;
         }
-        [data-testid="stMetricValue"] { font-size: 42px !important; color: #00FF41 !important; text-align: center; }
-        [data-testid="stMetricLabel"] { font-size: 20px !important; color: #00FF41 !important; text-align: center; }
+        [data-testid="stMetricValue"] { font-size: 40px !important; color: #00FF41 !important; text-align: center; }
+        [data-testid="stMetricLabel"] { font-size: 18px !important; color: #00FF41 !important; text-align: center; }
         h3 { color: #00FF41 !important; text-align: center; text-shadow: 0 0 10px #00FF41; }
     </style>
 """, unsafe_allow_html=True)
 
-# 4. BANCO DE DADOS (NOMES CORRIGIDOS)
-if 'logs_v3' not in st.session_state:
-    st.session_state['logs_v3'] = []
+# 4. BANCO DE DADOS (CORREÇÃO DE SINTAXE E ORTOGRAFIA)
+if 'logs_final' not in st.session_state:
+    st.session_state['logs_final'] = []
 
-# Mantendo os nomes com acentos corretos
 banco = {
-    'Salmão':
+    'Salmão':   {'ref': 8.50,  'lib': 85, 'pen': 15},
+    'Camarão':  {'ref': 13.00, 'lib': 60, 'pen': 40},
+    'Tilápia':  {'ref': 5.40,  'lib': 95, 'pen': 5}
+}
+
+# 5. ESTRUTURA DE ABAS
+t_rel, t_hist, t_casado, t_analise = st.tabs(["📑 RELATÓRIO", "📜 HISTÓRICO", "📊 CASADO", "📉 ANÁLISE"])
+
+with t_rel:
+    st.write("### > TERMINAL DE OPERAÇÃO")
+    item = st.selectbox("IDENTIFIQUE O ITEM:", list(banco.keys()))
+    val_at = st.number_input("VALOR ATUAL ($ USD):", value=banco[item]['ref'], format="%.2f")
     
+    # Lógica de Auditoria
+    variacao = ((val_at - banco[item]['ref']) / banco[item]['ref']) * 100
+    veredito = "ENTRA" if variacao < 10 else "PULA"
+    
+    if st.button("🚀 REGISTRAR AUDITORIA"):
+        st.session_state['logs_final'].insert(0, {
+            "HORA": datetime.now().strftime("%H:%M:%S"),
+            "ITEM": item,
+            "VALOR": f"$ {val_at:.2f}",
+            "VAR%": f"{variacao:.2f}%",
+            "STATUS": veredito
+        })
+        st.success
+        
