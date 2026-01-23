@@ -4,7 +4,7 @@ from datetime import datetime
 import plotly.express as px
 import streamlit.components.v1 as components
 
-# 1. CONFIGURAÇÃO DE COMANDO
+# 1. SETUP DE COMANDO CENTRAL
 st.set_page_config(page_title="SPA IA SENTINELA", layout="wide")
 
 # 2. MOTOR MATRIX (SANEADO)
@@ -39,10 +39,30 @@ matrix_code = """
 """
 components.html(matrix_code, height=0)
 
-# 3. ESTILIZAÇÃO CSS (INTERFACE NOTA FISCAL)
+# 3. ESTILIZAÇÃO CSS (DESIGN NOTA FISCAL)
 st.markdown("""
     <style>
         [data-testid="stAppViewContainer"] { background: transparent !important; }
         .stTabs [data-baseweb="tab-panel"] {
-            background-color: rgba(0, 0,
-            
+            background-color: rgba(0, 0, 0, 0.95) !important;
+            border: 2px solid #00FF41;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .nota-fiscal {
+            font-family: 'Courier New', Courier, monospace;
+            border: 1px dashed #00FF41;
+            padding: 15px;
+            background-color: rgba(0, 20, 0, 0.8);
+            color: #00FF41;
+            margin-top: 20px;
+        }
+        .nota-header { border-bottom: 1px dashed #00FF41; text-align: center; margin-bottom: 10px; }
+        .nota-item { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .nota-footer { border-top: 1px dashed #00FF41; margin-top: 10px; padding-top: 10px; font-weight: bold; }
+        .stDownloadButton button { width: 100% !important; background-color: #000 !important; color: #00FF41 !important; border: 2px solid #00FF41 !important; }
+    </style>
+""", unsafe_allow_html=True)
+
+# 4. BANCO DE DADOS
+if 'logs_sentinela' not in st
