@@ -4,11 +4,11 @@ from datetime import datetime
 import plotly.express as px
 import streamlit.components.v1 as components
 
-# 1. CONFIGURAÇÃO DE SOBERANIA
+# 1. SETUP DE COMANDO
 st.set_page_config(page_title="SPA IA SENTINELA", layout="wide")
 
-# 2. MOTOR MATRIX (CORTINA DE CÓDIGOS)
-matrix_v9 = """
+# 2. MOTOR MATRIX (FUNDO ANIMADO)
+matrix_v10 = """
 <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: black;">
     <canvas id="m"></canvas>
 </div>
@@ -37,9 +37,9 @@ matrix_v9 = """
     setInterval(draw, 33);
 </script>
 """
-components.html(matrix_v9, height=0)
+components.html(matrix_v10, height=0)
 
-# 3. DESIGN SENTINELA (AJUSTES VISUAIS E ORTOGRÁFICOS)
+# 3. CSS SENTINELA (ORTOGRAFIA E DESIGN)
 st.markdown("""
     <style>
         [data-testid="stAppViewContainer"] { background: transparent !important; }
@@ -55,19 +55,47 @@ st.markdown("""
             color: #00FF41 !important;
             border: 2px solid #00FF41 !important;
             font-weight: bold !important;
-            margin-top: 20px;
+            margin-top: 15px;
         }
-        [data-testid="stMetricValue"] { font-size: 40px !important; color: #00FF41 !important; text-align: center; }
-        [data-testid="stMetricLabel"] { font-size: 18px !important; color: #00FF41 !important; text-align: center; }
+        [data-testid="stMetricValue"] { font-size: 42px !important; color: #00FF41 !important; text-align: center; }
+        [data-testid="stMetricLabel"] { font-size: 20px !important; color: #00FF41 !important; text-align: center; }
         h3 { color: #00FF41 !important; text-align: center; text-shadow: 0 0 10px #00FF41; }
     </style>
 """, unsafe_allow_html=True)
 
-# 4. BANCO DE DADOS (CORREÇÃO DE SINTAXE E ACENTUAÇÃO)
-if 'logs_sentinela' not in st.session_state:
-    st.session_state['logs_sentinela'] = []
+# 4. BANCO DE DADOS (CORRIGIDO)
+if 'logs_vfinal' not in st.session_state:
+    st.session_state['logs_vfinal'] = []
 
 banco = {
     'Salmão':   {'ref': 8.50,  'lib': 85, 'pen': 15},
-    'Camarão':  {'ref': 13.00, 'lib
-                 
+    'Camarão':  {'ref': 13.00, 'lib': 60, 'pen': 40},
+    'Tilápia':  {'ref': 5.40,  'lib': 95, 'pen': 5}
+}
+
+# 5. ESTRUTURA OPERACIONAL
+t_rel, t_hist, t_casado, t_analise = st.tabs(["📑 RELATÓRIO", "📜 HISTÓRICO", "📊 CASADO", "📉 ANÁLISE"])
+
+with t_rel:
+    st.write("### > TERMINAL DE OPERAÇÃO")
+    item = st.selectbox("IDENTIFIQUE O ITEM:", list(banco.keys()))
+    val_in = st.number_input("VALOR ATUAL ($ USD):", value=banco[item]['ref'], format="%.2f")
+    
+    var_calc = ((val_in - banco[item]['ref']) / banco[item]['ref']) * 100
+    veredito = "ENTRA" if var_calc < 10 else "PULA"
+    
+    if st.button("🚀 REGISTRAR AUDITORIA"):
+        st.session_state['logs_vfinal'].insert(0, {
+            "HORA": datetime.now().strftime("%H:%M:%S"),
+            "ITEM": item,
+            "VALOR": f"$ {val_in:.2f}",
+            "VAR%": f"{var_calc:.2f}%",
+            "STATUS": veredito
+        })
+        st.success(f"DADO REGISTRADO: {veredito}")
+    
+    # BOTÃO PARA GERAR RELATÓRIO FINAL
+    if st.session_state['logs_vfinal']:
+        df_exp = pd.DataFrame(st.session_state['logs_vfinal'])
+        # utf-8-sig garante a ortografia perfeita no Excel do Celular
+        csv_data = df_exp.to_csv(index=False, sep=';', encoding
