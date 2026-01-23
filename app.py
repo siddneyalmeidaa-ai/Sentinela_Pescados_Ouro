@@ -41,5 +41,31 @@ components.html(matrix_vFinal, height=0)
 
 # 3. ESTILIZAÇÃO CSS SENTINELA
 st.markdown("""
+    <style>
+        [data-testid="stAppViewContainer"] { background: transparent !important; }
+        .stTabs [data-baseweb="tab-panel"] {
+            background-color: rgba(0, 0, 0, 0.9) !important;
+            border: 2px solid #00FF41;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .stDownloadButton button {
+            width: 100% !important;
+            background-color: #000 !important;
+            color: #00FF41 !important;
+            border: 2px solid #00FF41 !important;
+            font-weight: bold !important;
+        }
+        [data-testid="stMetricValue"] { color: #00FF41 !important; text-align: center; font-size: 40px !important; }
+        [data-testid="stMetricLabel"] { color: #00FF41 !important; text-align: center; font-size: 18px !important; }
+        h3 { color: #00FF41 !important; text-align: center; text-shadow: 0 0 10px #00FF41; }
+    </style>
+""", unsafe_allow_html=True)
 
-    
+# 4. BANCO DE DADOS OPERACIONAL
+if 'logs_sentinela' not in st.session_state:
+    st.session_state['logs_sentinela'] = []
+
+banco = {
+    'Salmão':   {'ref': 8.50,  'lib': 85,
+                 
