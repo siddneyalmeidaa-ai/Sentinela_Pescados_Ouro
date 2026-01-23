@@ -41,7 +41,5 @@ components.html(matrix_vFinal, height=0)
 
 # 3. ESTILIZAÇÃO CSS SENTINELA
 st.markdown("""
-    <style>
-        [data-testid="stAppViewContainer"] { background: transparent !important; }
-        .stTabs [data-baseweb="tab-panel"]
-        
+
+    
