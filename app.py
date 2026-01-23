@@ -2,69 +2,26 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import plotly.express as px
-import streamlit.components.v1 as components
 
-# 1. SETUP DO SISTEMA
-st.set_page_config(page_title="SPA IA SENTINELA", layout="wide")
+# 1. CONFIGURAÇÃO DE INTERFACE LIMPA
+st.set_page_config(page_title="SENTINELA V5.0", layout="wide")
 
-# 2. FUNDO MATRIX (CÓDIGO LIMPO)
-matrix_code = """
-<div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: black;">
-    <canvas id="m"></canvas>
-</div>
-<script>
-    var c = document.getElementById("m");
-    var ctx = c.getContext("2d");
-    c.height = window.innerHeight; c.width = window.innerWidth;
-    var txt = "0101010101ABCDEFHIJKLMNOPQRSTUVWXYZ@#$%&*";
-    txt = txt.split("");
-    var fsize = 14;
-    var cols = c.width/fsize;
-    var ds = [];
-    for(var x = 0; x < cols; x++) ds[x] = 1;
-    function draw() {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-        ctx.fillRect(0, 0, c.width, c.height);
-        ctx.fillStyle = "#0F0";
-        ctx.font = fsize + "px monospace";
-        for(var i = 0; i < ds.length; i++) {
-            var t = txt[Math.floor(Math.random()*txt.length)];
-            ctx.fillText(t, i*fsize, ds[i]*fsize);
-            if(ds[i]*fsize > c.height && Math.random() > 0.975) ds[i] = 0;
-            ds[i]++;
-        }
-    }
-    setInterval(draw, 33);
-</script>
-"""
-components.html(matrix_code, height=0)
-
-# 3. ESTILIZAÇÃO CSS (DESIGN NOTA FISCAL)
+# Estilização básica para manter o modo escuro e legibilidade
 st.markdown("""
     <style>
-        [data-testid="stAppViewContainer"] { background: transparent !important; }
-        .stTabs [data-baseweb="tab-panel"] {
-            background-color: rgba(0, 0, 0, 0.95) !important;
-            border: 2px solid #00FF41;
-            border-radius: 15px;
-            padding: 15px;
-        }
+        .reportview-container { background: #0e1117; }
         .nota-fiscal {
-            font-family: 'Courier New', Courier, monospace;
-            border: 1px dashed #00FF41;
-            padding: 15px;
-            background-color: rgba(0, 20, 0, 0.9);
+            font-family: 'Courier New', monospace;
+            border: 2px dashed #00FF41;
+            padding: 20px;
+            background-color: #000;
             color: #00FF41;
-            margin-top: 15px;
         }
-        .nota-header { border-bottom: 1px dashed #00FF41; text-align: center; padding-bottom: 10px; margin-bottom: 10px; }
-        .nota-item { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em; }
-        .nota-total { border-top: 2px solid #00FF41; margin-top: 10px; padding-top: 10px; font-weight: bold; font-size: 1.1em; }
-        .stDownloadButton button { width: 100% !important; background-color: #000 !important; color: #00FF41 !important; border: 2px solid #00FF41 !important; }
+        .nota-item { display: flex; justify-content: space-between; border-bottom: 1px solid #111; }
     </style>
 """, unsafe_allow_html=True)
 
-# 4. BANCO DE DADOS E MEMÓRIA
+# 2. BANCO DE DADOS (PADRÃO OURO)
 if 'logs_sentinela' not in st.session_state:
     st.session_state['logs_sentinela'] = []
 
@@ -74,8 +31,82 @@ banco = {
     'Tilápia':  {'ref': 5.40,  'lib': 95, 'pen': 5}
 }
 
-# 5. NAVEGAÇÃO
-t_term, t_rel, t_casado, t_analise = st.tabs(["🎮 TERMINAL", "📑 RELATÓRIO", "📊 CASADO", "📉 ANÁLISE"])
+# 3. NAVEGAÇÃO POR ABAS
+t_term, t_rel, t_analise = st.tabs(["🎮 TERMINAL DE ENTRADA", "📑 RELATÓRIO FISCAL", "📈 ANÁLISE"])
 
-# --- ABA TERMINAL ---
-with
+# --- ABA 1: TERMINAL (AÇÃO) ---
+with t_term:
+    st.subheader("> REGISTRO DE OPERAÇÃO")
+    item_op = st.selectbox("SELECIONE O PRODUTO:", list(banco.keys()))
+    
+    # Stake orientada: Usando valor exato conforme sua instrução de 20/10/1 Real
+    val_op = st.number_input("VALOR DA RODADA ($):", value=banco[item_op]['ref'], step=0.10)
+    
+    if st.button("🚀 EXECUTAR REGISTRO"):
+        # Cálculo de variação e projeção com -50% conforme sua regra
+        variacao = ((val_op - banco[item_op]['ref']) / banco[item_op]['ref'])
+        projecao_ajustada = variacao * 0.5  # Aplicando -50% da projeção
+        
+        st.session_state['logs_sentinela'].insert(0, {
+            "HORA": datetime.now().strftime("%H:%M:%S"),
+            "ITEM": item_op,
+            "VALOR_NUM": val_op,
+            "STATUS": "ENTRA" if variacao < 0.1 else "PULA"
+        })
+        st.success(f"REGISTRO DE {item_op} ENVIADO PARA O BANCO.")
+
+# --- ABA 2: RELATÓRIO (O CORAÇÃO DO ERRO ANTERIOR) ---
+with t_rel:
+    st.subheader("> AUDITORIA DIGITAL")
+    
+    if st.session_state['logs_sentinela']:
+        df = pd.DataFrame(st.session_state['logs_sentinela'])
+        
+        # Cálculo total blindado (apenas números)
+        total_acumulado = sum(d['VALOR_NUM'] for d in st.session_state['logs_sentinela'])
+        
+        # Interface de Nota Fiscal
+        st.markdown(f"""
+        <div class="nota-fiscal">
+            <h2 style='text-align:center;'>CUPOM SENTINELA IA</h2>
+            <p style='text-align:center;'>DATA: {datetime.now().strftime('%d/%m/%Y')}</p>
+            <hr>
+        """, unsafe_allow_html=True)
+        
+        for entry in st.session_state['logs_sentinela']:
+            st.markdown(f"""
+                <div class="nota-item">
+                    <span>{entry['ITEM']} ({entry['HORA']})</span>
+                    <span>$ {entry['VALOR_NUM']:.2f}</span>
+                </div>
+            """, unsafe_allow_html=True)
+            
+        st.markdown(f"""
+            <hr>
+            <div style='display:flex; justify-content:space-between; font-weight:bold; font-size:1.2em;'>
+                <span>TOTAL ACUMULADO:</span>
+                <span>$ {total_acumulado:.2f}</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Download seguro para Celular
+        csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
+        st.download_button("📥 BAIXAR EXCEL (SANEADO)", data=csv, 
+                           file_name=f"Relatorio_S.A_{datetime.now().strftime('%H%M')}.csv")
+    else:
+        st.warning("AGUARDANDO PRIMEIRA OPERAÇÃO NO TERMINAL.")
+
+# --- ABA 3: ANÁLISE ---
+with t_analise:
+    st.write(f"### MÉTRICA: {item_op}")
+    # Substituindo LIBERADO e PENDENTE pelos valores calculados conforme sua regra
+    col1, col2 = st.columns(2)
+    col1.metric("LIBERADO", f"{banco[item_op]['lib']}%")
+    col2.metric("PENDENTE", f"{banco[item_op]['pen']}%")
+    
+    fig = px.pie(values=[banco[item_op]['lib'], banco[item_op]['pen']], 
+                 names=['LIB', 'PEN'], hole=0.6,
+                 color_discrete_sequence=['#00FF41', '#330000'])
+    st.plotly_chart(fig, use_container_width=True)
+                    
