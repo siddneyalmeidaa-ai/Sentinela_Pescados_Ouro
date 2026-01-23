@@ -7,7 +7,7 @@ import streamlit.components.v1 as components
 # 1. COMANDO CENTRAL
 st.set_page_config(page_title="SPA IA SENTINELA", layout="wide")
 
-# 2. MOTOR MATRIX (CÓDIGO FECHADO E SEGURO)
+# 2. MOTOR MATRIX (CÓDIGO BLINDADO)
 matrix_vFinal = """
 <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: black;">
     <canvas id="m"></canvas>
@@ -64,24 +64,4 @@ st.markdown("""
 
 # 4. BANCO DE DADOS (ACENTUAÇÃO CORRIGIDA)
 if 'logs_sentinela' not in st.session_state:
-    st.session_state['logs_sentinela'] = []
-
-banco = {
-    'Salmão':   {'ref': 8.50,  'lib': 85, 'pen': 15},
-    'Camarão':  {'ref': 13.00, 'lib': 60, 'pen': 40},
-    'Tilápia':  {'ref': 5.40,  'lib': 95, 'pen': 5}
-}
-
-# 5. ABAS DO SISTEMA
-t_rel, t_hist, t_casado, t_analise = st.tabs(["📑 RELATÓRIO", "📜 HISTÓRICO", "📊 CASADO", "📉 ANÁLISE"])
-
-with t_rel:
-    st.write("### > TERMINAL DE OPERAÇÃO")
-    item = st.selectbox("IDENTIFIQUE O ITEM:", list(banco.keys()))
-    val_in = st.number_input("VALOR ATUAL ($ USD):", value=banco[item]['ref'], format="%.2f")
     
-    variacao = ((val_in - banco[item]['ref']) / banco[item]['ref']) * 100
-    status = "ENTRA" if variacao < 10 else "PULA"
-    
-    if st.button("🚀 EXECUTAR REGISTRO"):
-        st.session_state['logs_sentinela'].
