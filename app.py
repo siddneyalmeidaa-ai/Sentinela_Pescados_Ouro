@@ -4,24 +4,20 @@ from datetime import datetime
 import plotly.express as px
 import streamlit.components.v1 as components
 
-# 1. SETUP DE SOBERANIA
+# 1. SETUP DE COMANDO
 st.set_page_config(page_title="SPA IA SENTINELA", layout="wide")
 
-# 2. MOTOR MATRIX V3 (CHUVA DENSA E FLUIDA)
-matrix_v3 = """
+# 2. MOTOR MATRIX (APENAS PARA ABAS DE TEXTO)
+matrix_script = """
 <canvas id="matrix_canvas"></canvas>
 <style>
     body { margin: 0; overflow: hidden; background: black; }
-    #matrix_canvas {
-        position: fixed; top: 0; left: 0; z-index: -1;
-        width: 100vw; height: 100vh;
-    }
+    #matrix_canvas { position: fixed; top: 0; left: 0; z-index: -1; width: 100vw; height: 100vh; opacity: 0.5; }
 </style>
 <script>
     const canvas = document.getElementById('matrix_canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
     const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$#@%";
     const fontSize = 14;
     const columns = canvas.width / fontSize;
@@ -38,24 +34,24 @@ matrix_v3 = """
             drops[i]++;
         }
     }
-    setInterval(rain, 30);
+    setInterval(rain, 33);
 </script>
 """
-components.html(matrix_v3, height=0)
 
-# 3. CSS PARA ORGANIZAÇÃO DE TABELAS E CENTRALIZAÇÃO
+# 3. CSS PARA ORGANIZAÇÃO E FORMATAÇÃO
 st.markdown("""
     <style>
-        [data-testid="stAppViewContainer"] { background: transparent; }
+        [data-testid="stAppViewContainer"] { background-color: black; }
         .stTabs [data-baseweb="tab-panel"] {
             background-color: rgba(0, 0, 0, 0.9) !important;
             border: 2px solid #00FF41;
             border-radius: 10px;
             padding: 20px;
         }
-        /* Ajuste para tabela não quebrar texto */
+        /* Organização de Tabelas: Sem quebra de linha e Centralizado */
         .stTable td, .stTable th {
             white-space: nowrap !important;
+            padding: 10px 20px !important;
             text-align: center !important;
             color: #00FF41 !important;
         }
@@ -64,71 +60,73 @@ st.markdown("""
             text-shadow: 0 0 10px #00FF41;
             text-align: center;
         }
-        div[data-testid="stMetricValue"] { text-align: center; }
     </style>
 """, unsafe_allow_html=True)
 
-# 4. BANCO E HISTÓRICO
-if 'historico_mestre' not in st.session_state:
-    st.session_state['historico_mestre'] = []
+# 4. BANCO DE DADOS E MEMÓRIA
+if 'logs_mestre' not in st.session_state:
+    st.session_state['logs_mestre'] = []
 
-banco_peixes = {
+banco = {
     'Salmão':   {'ref': 8.50,  'lib': 85, 'pen': 15},
     'Camarão':  {'ref': 13.00, 'lib': 60, 'pen': 40},
     'Tilápia':  {'ref': 5.40,  'lib': 95, 'pen': 5}
 }
 
-# 5. NAVEGAÇÃO
+# 5. NAVEGAÇÃO POR ABAS
 t_rel, t_hist, t_casado, t_analisia = st.tabs(["📑 RELATÓRIO", "📜 HISTÓRIO", "📊 CASADO", "📉 ANALISIA"])
 
 with t_rel:
-    st.write("### > ENTRADA_DADOS_TERMINAL_")
-    item = st.selectbox("PRODUTO:", list(banco_peixes.keys()))
-    valor = st.number_input("PREÇO ($):", value=banco_peixes[item]['ref'], format="%.2f")
+    components.html(matrix_script, height=0) # CHUVA ATIVA AQUI
+    st.write("### > ENTRADA_AUDITORIA_")
+    item = st.selectbox("PRODUTO:", list(banco.keys()))
+    valor = st.number_input("PREÇO ATUAL ($):", value=banco[item]['ref'], format="%.2f")
     
-    calc_x = ((valor - banco_peixes[item]['ref']) / banco_peixes[item]['ref']) * 100
-    res = "ENTRA" if calc_x < 10 else "PULA"
+    variacao = ((valor - banco[item]['ref']) / banco[item]['ref']) * 100
+    veredito = "ENTRA" if variacao < 10 else "PULA"
     
-    if st.button("🚀 REGISTRAR AUDITORIA"):
-        st.session_state['historico_mestre'].insert(0, {
-            "DATA_HORA": datetime.now().strftime("%H:%M:%S"),
+    if st.button("🚀 REGISTRAR"):
+        st.session_state['logs_mestre'].insert(0, {
+            "HORA": datetime.now().strftime("%H:%M:%S"),
             "ITEM": item,
             "VALOR": f"$ {valor:.2f}",
-            "VARIAÇÃO": f"{calc_x:.2f}%",
-            "STATUS": res
+            "VARIAÇÃO": f"{variacao:.2f}%",
+            "STATUS": veredito
         })
-        st.success(f"DADO GRAVADO: {res}")
+        st.success(f"REGISTRADO: {veredito}")
 
 with t_hist:
-    st.write("### > BANCO_DE_DADOS_HISTORICO_")
-    if st.session_state['historico_mestre']:
-        st.table(pd.DataFrame(st.session_state['historico_mestre']))
+    components.html(matrix_script, height=0) # CHUVA ATIVA AQUI
+    st.write("### > HISTÓRICO_DE_OPERAÇÕES_")
+    if st.session_state['logs_mestre']:
+        st.table(pd.DataFrame(st.session_state['logs_mestre']))
     else:
-        st.info("SISTEMA_VAZIO")
+        st.info("SISTEMA_AGUARDANDO_DADOS")
 
 with t_casado:
-    st.write("### > VISÃO_CONSOLIDADA_S.A_")
-    df_view = pd.DataFrame([{
-        "ITEM": k, 
-        "REF": f"$ {v['ref']:.2f}", 
-        "LIBERADO": f"{v['lib']}%", 
-        "PENDENTE": f"{v['pen']}%"
-    } for k, v in banco_peixes.items()])
-    st.table(df_view)
+    # SEM CHUVA PARA MÁXIMA NITIDEZ DO GRÁFICO
+    st.write("### > VISÃO_CONSOLIDADA_")
+    df_c = pd.DataFrame([{
+        "ITEM": k, "REF": f"$ {v['ref']:.2f}", "LIBERADO": f"{v['lib']}%", "PENDENTE": f"{v['pen']}%"
+    } for k, v in banco.items()])
+    st.table(df_c)
     
-    fig_b = px.bar(df_view, x="ITEM", y=[85, 60, 95], # Exemplificando valores fixos para o gráfico
-                   color_discrete_sequence=['#00FF41', '#FF0000'])
-    fig_b.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="#00FF41")
+    fig_b = px.bar(df_c, x="ITEM", y=["LIBERADO", "PENDENTE"], barmode="stack", 
+                   color_discrete_map={"LIBERADO": "#00FF41", "PENDENTE": "#FF0000"})
+    fig_b.update_layout(paper_bgcolor='black', plot_bgcolor='black', font_color="#00FF41")
     st.plotly_chart(fig_b, use_container_width=True)
 
 with t_analisia:
+    # SEM CHUVA PARA MÁXIMA NITIDEZ DO GRÁFICO
     st.write(f"### > ANALISIA: {item}")
-    c1, c2 = st.columns(2)
-    c1.metric("LIBERADO", f"{banco_peixes[item]['lib']}%")
-    c2.metric("PENDENTE", f"{banco_peixes[item]['pen']}%")
+    st.metric("VARIAÇÃO ATUAL", f"{variacao:.2f}%")
     
-    fig_pie = px.pie(values=[banco_peixes[item]['lib'], banco_peixes[item]['pen']], 
-                     names=['LIB', 'PEN'], hole=0.6, color_discrete_sequence=['#00FF41', '#FF0000'])
-    fig_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)', font_color="#00FF41")
-    st.plotly_chart(fig_pie, use_container_width=True)
+    c1, c2 = st.columns(2)
+    c1.metric("LIBERADO", f"{banco[item]['lib']}%")
+    c2.metric("PENDENTE", f"{banco[item]['pen']}%")
+    
+    fig_p = px.pie(values=[banco[item]['lib'], banco[item]['pen']], names=['LIB', 'PEN'], 
+                   hole=0.6, color_discrete_sequence=['#00FF41', '#FF0000'])
+    fig_p.update_layout(paper_bgcolor='black', font_color="#00FF41", showlegend=False)
+    st.plotly_chart(fig_p, use_container_width=True)
     
