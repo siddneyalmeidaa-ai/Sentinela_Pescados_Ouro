@@ -4,43 +4,42 @@ from datetime import datetime
 import plotly.express as px
 import streamlit.components.v1 as components
 
-# 1. SETUP DE SOBERANIA
+# 1. CONFIGURAÇÃO DE SOBERANIA
 st.set_page_config(page_title="SPA IA SENTINELA", layout="wide")
 
-# 2. MOTOR MATRIX V4 - CORTINA TOTAL (INJETADA NO FUNDO)
-matrix_v4 = """
+# 2. MOTOR MATRIX (CHUVA TOTAL NO FUNDO)
+matrix_final = """
 <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: black;">
-    <canvas id="c"></canvas>
+    <canvas id="m"></canvas>
 </div>
 <script>
-    var c = document.getElementById("c");
+    var c = document.getElementById("m");
     var ctx = c.getContext("2d");
-    c.height = window.innerHeight;
-    c.width = window.innerWidth;
-    var matrix = "0101010101ABCDEFHIJKLMNOPQRSTUVWXYZ@#$%&*";
-    matrix = matrix.split("");
-    var font_size = 14;
-    var columns = c.width/font_size;
-    var drops = [];
-    for(var x = 0; x < columns; x++) drops[x] = 1; 
+    c.height = window.innerHeight; c.width = window.innerWidth;
+    var txt = "0101010101ABCDEFHIJKLMNOPQRSTUVWXYZ@#$%&*";
+    txt = txt.split("");
+    var fsize = 14;
+    var cols = c.width/fsize;
+    var ds = [];
+    for(var x = 0; x < cols; x++) ds[x] = 1;
     function draw() {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.04)";
+        ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
         ctx.fillRect(0, 0, c.width, c.height);
         ctx.fillStyle = "#0F0";
-        ctx.font = font_size + "px arial";
-        for(var i = 0; i < drops.length; i++) {
-            var text = matrix[Math.floor(Math.random()*matrix.length)];
-            ctx.fillText(text, i*font_size, drops[i]*font_size);
-            if(drops[i]*font_size > c.height && Math.random() > 0.975) drops[i] = 0;
-            drops[i]++;
+        ctx.font = fsize + "px monospace";
+        for(var i = 0; i < ds.length; i++) {
+            var t = txt[Math.floor(Math.random()*txt.length)];
+            ctx.fillText(t, i*fsize, ds[i]*fsize);
+            if(ds[i]*fsize > c.height && Math.random() > 0.975) ds[i] = 0;
+            ds[i]++;
         }
     }
-    setInterval(draw, 35);
+    setInterval(draw, 33);
 </script>
 """
-components.html(matrix_v4, height=0)
+components.html(matrix_final, height=0)
 
-# 3. CSS DE ALINHAMENTO E BLINDAGEM DE TABELAS
+# 3. CSS DE ALINHAMENTO E TRANSPARÊNCIA
 st.markdown("""
     <style>
         [data-testid="stAppViewContainer"] { background: transparent !important; }
@@ -50,27 +49,23 @@ st.markdown("""
             border-radius: 10px;
             padding: 15px;
         }
-        /* CORREÇÃO DAS TABELAS: LARGURA FIXA E SEM QUEBRA */
         .stTable td, .stTable th {
             white-space: nowrap !important;
             text-align: center !important;
             color: #00FF41 !important;
-            font-family: 'Courier New', monospace;
-            padding: 12px !important;
+            padding: 10px !important;
         }
-        /* CENTRALIZAÇÃO DE MÉTRICAS E TÍTULOS */
-        h1, h2, h3, p, label, [data-testid="stMetricValue"] {
-            color: #00FF41 !important;
+        h1, h2, h3, p, label, .stMetric { 
+            color: #00FF41 !important; 
             text-shadow: 0 0 10px #00FF41;
             text-align: center !important;
         }
-        .stSelectbox label { text-align: left !important; }
     </style>
 """, unsafe_allow_html=True)
 
 # 4. BANCO DE DADOS
-if 'logs_finais' not in st.session_state:
-    st.session_state['logs_finais'] = []
+if 'relatorio_logs' not in st.session_state:
+    st.session_state['relatorio_logs'] = []
 
 banco = {
     'Salmão':   {'ref': 8.50,  'lib': 85, 'pen': 15},
@@ -78,46 +73,57 @@ banco = {
     'Tilápia':  {'ref': 5.40,  'lib': 95, 'pen': 5}
 }
 
-# 5. INTERFACE OPERACIONAL
+# 5. ABAS
 t_rel, t_hist, t_casado, t_analisia = st.tabs(["📑 RELATÓRIO", "📜 HISTÓRIO", "📊 CASADO", "📉 ANALISIA"])
 
 with t_rel:
-    st.write("### > ACESSO_AO_TERMINAL_")
+    st.write("### > INPUT_SISTEMA_")
     item = st.selectbox("IDENTIFIQUE O ITEM:", list(banco.keys()))
-    val_at = st.number_input("VALOR_ATUAL ($):", value=banco[item]['ref'], format="%.2f")
+    val = st.number_input("VALOR ATUAL ($):", value=banco[item]['ref'], format="%.2f")
+    var = ((val - banco[item]['ref']) / banco[item]['ref']) * 100
+    res = "ENTRA" if var < 10 else "PULA"
     
-    # Cálculo com regra S.A.
-    variacao = ((val_at - banco[item]['ref']) / banco[item]['ref']) * 100
-    veredito = "ENTRA" if variacao < 10 else "PULA"
-
-    if st.button("🚀 REGISTRAR NO SISTEMA"):
-        st.session_state['logs_finais'].insert(0, {
-            "HORA": datetime.now().strftime("%H:%M:%S"),
+    if st.button("🚀 EXECUTAR_AUDITORIA"):
+        st.session_state['relatorio_logs'].insert(0, {
+            "DATA_HORA": datetime.now().strftime("%H:%M:%S"),
             "ITEM": item,
-            "VALOR": f"$ {val_at:.2f}",
-            "X%": f"{variacao:.2f}%",
-            "STATUS": veredito
+            "PREÇO": f"$ {val:.2f}",
+            "VAR%": f"{var:.2f}%",
+            "STATUS": res
         })
-        st.success(f"DADO COMPUTADO: {veredito}")
+        st.success(f"DADO REGISTRADO: {res}")
 
 with t_hist:
-    st.write("### > BANCO_DE_DADOS_HISTORICO_")
-    if st.session_state['logs_finais']:
-        st.table(pd.DataFrame(st.session_state['logs_finais']))
+    st.write("### > BANCO_DE_DADOS_")
+    if st.session_state['relatorio_logs']:
+        st.table(pd.DataFrame(st.session_state['relatorio_logs']))
     else:
-        st.info("AGUARDANDO INPUTS...")
+        st.info("SEM REGISTROS NO MOMENTO")
 
 with t_casado:
-    st.write("### > VISÃO_CONSOLIDADA_S.A._")
-    # Tabela corrigida
-    df_c = pd.DataFrame([{"ITEM": k, "REF": f"$ {v['ref']:.2f}", "LIBERADO": f"{v['lib']}%", "PENDENTE": f"{v['pen']}%"} for k, v in banco.items()])
-    st.table(df_c)
+    st.write("### > CONSOLIDADO_S.A_")
+    # Tabela com nomes corrigidos
+    df_t = pd.DataFrame([{"ITEM": k, "REF": f"$ {v['ref']:.2f}", "LIBERADO": f"{v['lib']}%", "PENDENTE": f"{v['pen']}%"} for k, v in banco.items()])
+    st.table(df_t)
     
-    # Gráfico de Barras Corrigido (Fixando Eixo e Dados)
-    df_plot = pd.DataFrame([{"ITEM": k, "TIPO": "LIBERADO", "VALOR": v['lib']} for k, v in banco.items()] + 
-                           [{"ITEM": k, "TIPO": "PENDENTE", "VALOR": v['pen']} for k, v in banco.items()])
+    # Gráfico de Barras Consertado (Sem erro de sintaxe)
+    df_g = pd.DataFrame([{"Item": k, "Status": "LIBERADO", "Valor": v['lib']} for k, v in banco.items()] + 
+                        [{"Item": k, "Status": "PENDENTE", "Valor": v['pen']} for k, v in banco.items()])
     
-    fig_b = px.bar(df_plot, x="ITEM", y="VALOR", color="TIPO", barmode="stack",
+    fig_b = px.bar(df_g, x="Item", y="Valor", color="Status", barmode="stack",
                    color_discrete_map={"LIBERADO": "#00FF41", "PENDENTE": "#FF0000"})
-    fig_b.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color
+    fig_b.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="#00FF41", 
+                       yaxis_range=[0, 100])
+    st.plotly_chart(fig_b, use_container_width=True)
+
+with t_analisia:
+    st.write(f"### > ANALISIA: {item}")
+    c1, c2 = st.columns(2)
+    c1.metric("LIB", f"{banco[item]['lib']}%")
+    c2.metric("PEN", f"{banco[item]['pen']}%")
+    
+    fig_p = px.pie(values=[banco[item]['lib'], banco[item]['pen']], names=['LIB', 'PEN'], hole=0.6,
+                   color_discrete_sequence=['#00FF41', '#FF0000'])
+    fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', font_color="#00FF41", showlegend=False)
+    st.plotly_chart(fig_p, use_container_width=True)
     
