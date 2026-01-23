@@ -8,7 +8,7 @@ import streamlit.components.v1 as components
 st.set_page_config(page_title="SPA IA SENTINELA", layout="wide")
 
 # 2. MOTOR MATRIX (CORTINA DE CÓDIGOS)
-matrix_v8 = """
+matrix_v9 = """
 <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: black;">
     <canvas id="m"></canvas>
 </div>
@@ -37,9 +37,9 @@ matrix_v8 = """
     setInterval(draw, 33);
 </script>
 """
-components.html(matrix_v8, height=0)
+components.html(matrix_v9, height=0)
 
-# 3. DESIGN SENTINELA (AJUSTES VISUAIS)
+# 3. DESIGN SENTINELA (AJUSTES VISUAIS E ORTOGRÁFICOS)
 st.markdown("""
     <style>
         [data-testid="stAppViewContainer"] { background: transparent !important; }
@@ -63,35 +63,11 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 4. BANCO DE DADOS (CORREÇÃO DE SINTAXE E ORTOGRAFIA)
-if 'logs_final' not in st.session_state:
-    st.session_state['logs_final'] = []
+# 4. BANCO DE DADOS (CORREÇÃO DE SINTAXE E ACENTUAÇÃO)
+if 'logs_sentinela' not in st.session_state:
+    st.session_state['logs_sentinela'] = []
 
 banco = {
     'Salmão':   {'ref': 8.50,  'lib': 85, 'pen': 15},
-    'Camarão':  {'ref': 13.00, 'lib': 60, 'pen': 40},
-    'Tilápia':  {'ref': 5.40,  'lib': 95, 'pen': 5}
-}
-
-# 5. ESTRUTURA DE ABAS
-t_rel, t_hist, t_casado, t_analise = st.tabs(["📑 RELATÓRIO", "📜 HISTÓRICO", "📊 CASADO", "📉 ANÁLISE"])
-
-with t_rel:
-    st.write("### > TERMINAL DE OPERAÇÃO")
-    item = st.selectbox("IDENTIFIQUE O ITEM:", list(banco.keys()))
-    val_at = st.number_input("VALOR ATUAL ($ USD):", value=banco[item]['ref'], format="%.2f")
-    
-    # Lógica de Auditoria
-    variacao = ((val_at - banco[item]['ref']) / banco[item]['ref']) * 100
-    veredito = "ENTRA" if variacao < 10 else "PULA"
-    
-    if st.button("🚀 REGISTRAR AUDITORIA"):
-        st.session_state['logs_final'].insert(0, {
-            "HORA": datetime.now().strftime("%H:%M:%S"),
-            "ITEM": item,
-            "VALOR": f"$ {val_at:.2f}",
-            "VAR%": f"{variacao:.2f}%",
-            "STATUS": veredito
-        })
-        st.success
-        
+    'Camarão':  {'ref': 13.00, 'lib
+                 
