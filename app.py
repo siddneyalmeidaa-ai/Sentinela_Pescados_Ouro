@@ -4,10 +4,10 @@ from datetime import datetime
 import plotly.express as px
 import streamlit.components.v1 as components
 
-# 1. SETUP DE COMANDO CENTRAL
+# 1. SETUP DE COMANDO
 st.set_page_config(page_title="SPA IA SENTINELA", layout="wide")
 
-# 2. MOTOR MATRIX
+# 2. MOTOR MATRIX (SANEADO)
 matrix_code = """
 <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: black;">
     <canvas id="m"></canvas>
@@ -30,35 +30,5 @@ matrix_code = """
         for(var i = 0; i < ds.length; i++) {
             var t = txt[Math.floor(Math.random()*txt.length)];
             ctx.fillText(t, i*fsize, ds[i]*fsize);
-            if(ds[i]*fsize > c.height && Math.random() > 0.975) ds[i] = 0;
-            ds[i]++;
-        }
-    }
-    setInterval(draw, 33);
-</script>
-"""
-components.html(matrix_code, height=0)
-
-# 3. ESTILIZAÇÃO CSS (DESIGN NOTA FISCAL)
-st.markdown("""
-    <style>
-        [data-testid="stAppViewContainer"] { background: transparent !important; }
-        .stTabs [data-baseweb="tab-panel"] {
-            background-color: rgba(0, 0, 0, 0.95) !important;
-            border: 2px solid #00FF41;
-            border-radius: 15px;
-            padding: 20px;
-        }
-        .nota-fiscal {
-            font-family: 'Courier New', Courier, monospace;
-            border: 1px dashed #00FF41;
-            padding: 15px;
-            background-color: rgba(0, 20, 0, 0.9);
-            color: #00FF41;
-            margin-top: 20px;
-        }
-        .nota-header { border-bottom: 1px dashed #00FF41; text-align: center; padding-bottom: 10px; margin-bottom: 10px; }
-        .nota-item { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em; }
-        .nota-total { border-top: 2px solid #00FF41; margin-top: 10px; padding-top: 10px; font-weight: bold; font-size: 1.1em; }
-        .stDownloadButton button { width: 100
-        
+            if(ds[i]*fsize > c.height && Math.random()
+            
