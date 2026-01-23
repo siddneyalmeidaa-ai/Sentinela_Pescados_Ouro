@@ -4,7 +4,7 @@ from datetime import datetime
 import plotly.express as px
 import streamlit.components.v1 as components
 
-# 1. SETUP DE COMANDO
+# 1. CONFIGURAÇÃO DE COMANDO
 st.set_page_config(page_title="SPA IA SENTINELA", layout="wide")
 
 # 2. MOTOR MATRIX (SANEADO)
@@ -30,5 +30,19 @@ matrix_code = """
         for(var i = 0; i < ds.length; i++) {
             var t = txt[Math.floor(Math.random()*txt.length)];
             ctx.fillText(t, i*fsize, ds[i]*fsize);
-            if(ds[i]*fsize > c.height && Math.random()
+            if(ds[i]*fsize > c.height && Math.random() > 0.975) ds[i] = 0;
+            ds[i]++;
+        }
+    }
+    setInterval(draw, 33);
+</script>
+"""
+components.html(matrix_code, height=0)
+
+# 3. ESTILIZAÇÃO CSS (INTERFACE NOTA FISCAL)
+st.markdown("""
+    <style>
+        [data-testid="stAppViewContainer"] { background: transparent !important; }
+        .stTabs [data-baseweb="tab-panel"] {
+            background-color: rgba(0, 0,
             
