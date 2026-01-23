@@ -36,3 +36,11 @@ matrix_vFinal = """
     }
     setInterval(draw, 33);
 </script>
+"""
+components.html(matrix_vFinal, height=0)
+
+# 3. ESTILIZAÇÃO E ORTOGRAFIA CSS
+st.markdown("""
+    <style>
+        [data-testid="stAppViewContainer"] { background: transparent !
+        
